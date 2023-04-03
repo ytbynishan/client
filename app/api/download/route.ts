@@ -70,12 +70,33 @@ export async function POST(req:NextRequest) {
   //#endregion
 
 
+
   const mp3ArrayResponse =  await gather;
   const Bas64Content = await zipping(mp3ArrayResponse)
   const file_name = `Youtube_playlist${new Date().toLocaleTimeString()}.zip`
   const source_file_url =  `${git_url}/${file_name}`
-  const response = await axios.put(source_file_url, {message:`Youtube_playlist${new Date().toLocaleTimeString()}`,content:Bas64Content},{headers: {'Authorization': `Bearer ${git_token}`}});
-  const db_response = await axios.post(`${db_url}/api/telling`, {name:file_name , url:source_file_url},{headers:{'Authorization': `Bearer ${db_apiKey}`}})
+
+  const options = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + git_token
+    },
+    data: {message:`Youtube_playlist${new Date().toLocaleTimeString()}`,content:Bas64Content},
+    timeout: 3600000 // 5 seconds
+  };
+
+  const response = await axios.put(source_file_url,options);
+
+  const options2 = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + db_apiKey
+    },
+    data: {name:file_name , url:source_file_url},
+    timeout: 3600000 // 5 seconds
+  };
+
+  const db_response = await axios.post(`${db_url}/api/telling`, options2)
   return NextResponse.json({msg:'done' , url:response.data , title:file_name})
 }
 
