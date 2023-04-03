@@ -10,7 +10,7 @@ export async function POST(req:NextRequest) {
 
   //#region variables
 
-    const  {urls , names} = await req.json();
+    const  {data :{names , urls}} = await req.json();
     const git_url = process.env.GIT_URL
     const git_token = process.env.PERSONAL_ACCESS_TOKEN
     const db_url = process.env.DB_URL
@@ -81,22 +81,20 @@ export async function POST(req:NextRequest) {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + git_token
     },
-    data: {message:`Youtube_playlist${new Date().toLocaleTimeString()}`,content:Bas64Content},
     timeout: 3600000 // 5 seconds
   };
 
-  const response = await axios.put(source_file_url,options);
+  const response = await axios.put(source_file_url,{message:`Youtube_playlist${new Date().toLocaleTimeString()}`,content:Bas64Content} , options);
 
   const options2 = {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + db_apiKey
     },
-    data: {name:file_name , url:source_file_url},
     timeout: 3600000 // 5 seconds
   };
 
-  const db_response = await axios.post(`${db_url}/api/telling`, options2)
+  const db_response = await axios.post(`${db_url}/api/telling`,{name:file_name , url:source_file_url} , options2)
   return NextResponse.json({msg:'done' , url:response.data , title:file_name})
 }
 
