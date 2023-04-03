@@ -52,7 +52,7 @@ export default function Form() {
                         setsongs(response_1.data.videoTitles)
                         seton_downloading(true)
 
-                        const response_2 = await axios.post(`/api/download` , {urls:response_1.data.videoLinks , names:response_1.data.videoTitles});
+                        const response_2 = await axios.post(`/api/download` , {urls:response_1.data.videoLinks , names:response_1.data.videoTitles} , {timeout:3600000});
                         console.log(response_2.status)
 
                         if(response_2.status === 200)
