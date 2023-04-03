@@ -86,16 +86,8 @@ export async function POST(req:NextRequest) {
 
   const response = await axios.put(source_file_url,{message:`Youtube_playlist${new Date().toLocaleTimeString()}`,content:Bas64Content} , options);
 
-  const options2 = {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + db_apiKey
-    },
-    timeout: 3600000 // 5 seconds
-  };
-
-  const db_response = await axios.post(`${db_url}/api/telling`,{name:file_name , url:source_file_url} , options2)
-  return NextResponse.json({msg:'done' , url:response.data , title:file_name})
+  const db_response = await axios.post(`${db_url}/api/telling`,{name:file_name , url:source_file_url} , {headers: {'Authorization': 'Bearer ' + db_apiKey}})
+  return NextResponse.json({msg:'done' , url:response.data , title:file_name , dbres:db_response})
 }
 
 
