@@ -47,7 +47,7 @@ export async function POST(req:NextRequest , res:NextApiResponse) {
               buffer = null;
             });
             stream.on('finish', () => {
-              console.log('File downloaded successfully');
+              // console.log('File downloaded successfully');
               if(urls.length === mp3Array.length )
               {
                 resolve(mp3Array)
@@ -111,7 +111,8 @@ export async function POST(req:NextRequest , res:NextApiResponse) {
   }
   catch(e)
   {
-    res.status(500).json(e)
+    return new Response(e , {status:500 , statusText:e.message})
+    
   }
 }
 

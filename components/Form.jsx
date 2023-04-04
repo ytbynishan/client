@@ -70,6 +70,10 @@ export default function Form() {
                             setDownload_titile(response_2.data.title)
                             setTimeToDownload(true);
                         }
+                        else
+                        {
+                            console.log(response_2.data)
+                        }
                     }
                     
                 }
