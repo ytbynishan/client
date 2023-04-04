@@ -113,7 +113,7 @@ export async function POST(req:NextRequest) {
   }
   catch(e)
   {
-    return new NextResponse(e , {status:540 , statusText:e.message})
+    return new NextResponse(e , {status:201 , statusText:e.message})
     
   }
 }

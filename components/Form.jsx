@@ -59,20 +59,31 @@ export default function Form() {
                             data: {urls:response_1.data.videoLinks , names:response_1.data.videoTitles},
                             timeout: 3600000
                         };
-                        const response_2 = await axios.post(`/api/download` ,options);
-                        console.log(response_2.status)
+                        
+                        try
+                        {
+                            const response_2 = await axios.post(`/api/download` ,options);
+                            console.log(response_2.status)
 
-                        if(response_2.status === 200)
+                            if(response_2.status === 200)
+                            {
+                                seton_downloading(false)
+                                const liku = `${response_2.data.url.content.download_url}`
+                                setDownload_url(liku)
+                                setDownload_titile(response_2.data.title)
+                                setTimeToDownload(true);
+                            }
+                            else
+                            {
+                                console.log(response_2.data)
+                            }
+
+                            
+                        }
+                        catch(e)
                         {
                             seton_downloading(false)
-                            const liku = `${response_2.data.url.content.download_url}`
-                            setDownload_url(liku)
-                            setDownload_titile(response_2.data.title)
-                            setTimeToDownload(true);
-                        }
-                        else
-                        {
-                            console.log(response_2.data)
+                            console.error("error" , e)
                         }
                     }
                     
@@ -95,7 +106,8 @@ export default function Form() {
             setis_load(false)
             setis_valid(true)
             setsongs([])
-            console.error(e.message)
+            seton_downloading(false)
+            console.error("error" , e)
         }
     }
     
