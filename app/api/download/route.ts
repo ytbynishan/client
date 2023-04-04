@@ -20,37 +20,47 @@ export async function POST(req:NextRequest) {
 //#region gathering mp3 files
     const gather = new Promise(async(resolve , reject) => {
       const mp3Array = []
-      for(var i=0; i <urls.length; i++)
+      try
       {
-        console.log(`${i+1}. ${names[i]} => ${urls[i]}`)
+        for(var i=0; i <urls.length; i++)
+        {
+          console.log(`${i+1}. ${names[i]} => ${urls[i]}`)
 
-        var videoId = urlquery.parse(urls[i], true).query.v
+          var videoId = urlquery.parse(urls[i], true).query.v
 
 
-        const chunks = [];
-        
-          const videoTitle = names[i];
-          const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-        
-          const stream = ytdl(videoUrl, { filter: 'audioonly' })
+          const chunks = [];
           
-          stream.on('data', async (chunk) => {
-            chunks.push(chunk);
-          });
+            const videoTitle = names[i];
+            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
           
-          stream.on('end', () => {
-            var buffer = Buffer.concat(chunks);
-            mp3Array.push({name:videoTitle , data:buffer})
-            buffer = null;
-          });
-          
-          stream.on('finish', () => {
-            console.log('File downloaded successfully');
-            if(urls.length === mp3Array.length )
-            {
-              resolve(mp3Array)
-            }
-          });
+            const stream = ytdl(videoUrl, { filter: 'audioonly' })
+            
+            stream.on('data', async (chunk) => {
+              chunks.push(chunk);
+            });
+            
+            stream.on('end', () => {
+              var buffer = Buffer.concat(chunks);
+              mp3Array.push({name:videoTitle , data:buffer})
+              buffer = null;
+            });
+            stream.on('finish', () => {
+              console.log('File downloaded successfully');
+              if(urls.length === mp3Array.length )
+              {
+                resolve(mp3Array)
+              }
+            });
+
+            stream.on('error', (error) => {
+              reject(error)
+            });
+        }
+      }
+      catch(e)
+      {
+        reject(e)
       }
     })
 //#endregion
@@ -59,35 +69,49 @@ export async function POST(req:NextRequest) {
     const zipping = (mp3Array) => {
       return new Promise(async(resolve , reject) => {
         const zip = new JSZip();
-        mp3Array.forEach(({name , data}) => {
-            zip.file(`${name}.mp3`, data);
-        });
-        zip.generateAsync({ type: 'base64' }).then(async function(content) {
-          resolve(content)
-        })
+        try
+        {
+          mp3Array.forEach(({name , data}) => {
+          zip.file(`${name}.mp3`, data);
+          });
+          zip.generateAsync({ type: 'base64' }).then(async function(content) {
+            resolve(content)
+          })
+        }
+        catch(e)
+        {
+          reject(e)
+        }
       })
     }
   //#endregion
 
 
 
-  const mp3ArrayResponse =  await gather;
-  const Bas64Content = await zipping(mp3ArrayResponse)
-  const file_name = `Youtube_playlist${new Date().toLocaleTimeString()}.zip`
-  const source_file_url =  `${git_url}/${file_name}`
+  try
+  {
+    const mp3ArrayResponse =  await gather;
+    const Bas64Content = await zipping(mp3ArrayResponse)
+    const file_name = `Youtube_playlist${new Date().toLocaleTimeString()}.zip`
+    const source_file_url =  `${git_url}/${file_name}`
 
-  const options = {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + git_token
-    },
-    timeout: 3600000 // 5 seconds
-  };
+    const options = {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + git_token
+      },
+      timeout: 3600000 // 5 seconds
+    };
 
-  const response = await axios.put(source_file_url,{message:`Youtube_playlist${new Date().toLocaleTimeString()}`,content:Bas64Content} , options);
+    const response = await axios.put(source_file_url,{message:`Youtube_playlist${new Date().toLocaleTimeString()}`,content:Bas64Content} , options);
 
-  // const db_response = await axios.post(`${db_url}/api/telling`,{name:file_name , url:source_file_url} , {headers: {'Authorization': 'Bearer ' + db_apiKey}})
-  return NextResponse.json({msg:'done' , url:response.data , title:file_name})
+    // const db_response = await axios.post(`${db_url}/api/telling`,{name:file_name , url:source_file_url} , {headers: {'Authorization': 'Bearer ' + db_apiKey}})
+    return NextResponse.json({msg:'done' , url:response.data , title:file_name})
+  }
+  catch(e)
+  {
+    return new Response(e)
+  }
 }
 
 
