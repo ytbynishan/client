@@ -103,7 +103,7 @@ export async function POST(req:NextRequest) {
   }
   finally
   {
-    return;
+    console.log('done');
   }
 
 }
