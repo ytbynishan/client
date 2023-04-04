@@ -22,8 +22,8 @@ export async function POST(req:NextRequest) {
       {
         for(var i=0; i <urls.length; i++)
         {
-          const log_name = `${i+1}. ${names[i]} => ${urls[i]}`
-          console.log(log_name)
+          // const log_name = `${i+1}. ${names[i]} => ${urls[i]}`
+          // console.log(log_name)
 
           var videoId = urlquery.parse(urls[i], true).query.v
 
@@ -45,16 +45,20 @@ export async function POST(req:NextRequest) {
               buffer = null;
             });
             stream.on('finish', () => {
-              console.log("File downloaded successfully");
+              // console.log("File downloaded successfully");
               if(urls.length === mp3Array.length )
               {
                 resolve(mp3Array)
+                stream.destroy();
               }
             });
 
             stream.on('error', (error) => {
               reject(error)
+              stream.destroy();
             });
+
+
         }
       }
       catch(e)
