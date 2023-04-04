@@ -18,53 +18,44 @@ export async function POST(req:NextRequest) {
 //#region gathering mp3 files
     const gather = new Promise(async(resolve , reject) => {
       const mp3Array = []
-      try
+
+      for(var i=0; i <urls.length; i++)
       {
-        for(var i=0; i <urls.length; i++)
-        {
-          // const log_name = `${i+1}. ${names[i]} => ${urls[i]}`
-          // console.log(log_name)
+        // const log_name = `${i+1}. ${names[i]} => ${urls[i]}`
+        // console.log(log_name)
 
-          var videoId = urlquery.parse(urls[i], true).query.v
+        var videoId = urlquery.parse(urls[i], true).query.v
 
 
-          const chunks = [];
+        const chunks = [];
+        
+          const videoTitle = names[i];
+          const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        
+          const stream = ytdl(videoUrl, { filter: 'audioonly' })
           
-            const videoTitle = names[i];
-            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+          stream.on('data', async (chunk) => {
+            chunks.push(chunk);
+          });
           
-            const stream = ytdl(videoUrl, { filter: 'audioonly' })
-            
-            stream.on('data', async (chunk) => {
-              chunks.push(chunk);
-            });
-            
-            stream.on('end', () => {
-              var buffer = Buffer.concat(chunks);
-              mp3Array.push({name:videoTitle , data:buffer})
-              buffer = null;
-            });
-            stream.on('finish', () => {
-              // console.log("File downloaded successfully");
-              if(urls.length === mp3Array.length )
-              {
-                resolve(mp3Array)
-                stream.destroy();
-              }
-            });
+          stream.on('end', () => {
+            var buffer = Buffer.concat(chunks);
+            mp3Array.push({name:videoTitle , data:buffer})
+            buffer = null;
+          });
+          stream.on('finish', () => {
+            // console.log("File downloaded successfully");
+            if(urls.length === mp3Array.length )
+            {
+              resolve(mp3Array)
+            }
+          });
 
-            stream.on('error', (error) => {
-              reject(error)
-              stream.destroy();
-            });
-
-
+          stream.on('error', (error) => {
+            reject(error)
+          });
         }
-      }
-      catch(e)
-      {
-        reject(e)
-      }
+
     })
 //#endregion
 
@@ -72,19 +63,13 @@ export async function POST(req:NextRequest) {
     const zipping = (mp3Array) => {
       return new Promise(async(resolve , reject) => {
         const zip = new JSZip();
-        try
-        {
-          mp3Array.forEach(({name , data}) => {
+        mp3Array.forEach(({name , data}) => {
           zip.file(`${name}.mp3`, data);
           });
           zip.generateAsync({ type: 'base64' }).then(async function(content) {
             resolve(content)
           })
-        }
-        catch(e)
-        {
-          reject(e)
-        }
+
       })
     }
   //#endregion
