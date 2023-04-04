@@ -3,11 +3,8 @@ import axios from "axios";
 import urlquery from 'url';
 import ytdl from "ytdl-core";
 import JSZip from "jszip";
-import { NextApiResponse } from "next";
 
-
-
-export async function POST(req:NextRequest , res:NextApiResponse) {
+export async function POST(req:NextRequest) {
 
   //#region variables
 
@@ -25,7 +22,8 @@ export async function POST(req:NextRequest , res:NextApiResponse) {
       {
         for(var i=0; i <urls.length; i++)
         {
-          console.log(`${i+1}. ${names[i]} => ${urls[i]}`)
+          const log_name = `${i+1}. ${names[i]} => ${urls[i]}`
+          console.log(log_name)
 
           var videoId = urlquery.parse(urls[i], true).query.v
 
@@ -47,7 +45,7 @@ export async function POST(req:NextRequest , res:NextApiResponse) {
               buffer = null;
             });
             stream.on('finish', () => {
-              // console.log('File downloaded successfully');
+              console.log("File downloaded successfully");
               if(urls.length === mp3Array.length )
               {
                 resolve(mp3Array)
@@ -111,7 +109,7 @@ export async function POST(req:NextRequest , res:NextApiResponse) {
   }
   catch(e)
   {
-    return new Response(e , {status:500 , statusText:e.message})
+    return new NextResponse(e , {status:540 , statusText:e.message})
     
   }
 }
