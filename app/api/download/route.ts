@@ -3,10 +3,11 @@ import axios from "axios";
 import urlquery from 'url';
 import ytdl from "ytdl-core";
 import JSZip from "jszip";
+import { NextApiResponse } from "next";
 
 
 
-export async function POST(req:NextRequest) {
+export async function POST(req:NextRequest , res:NextApiResponse) {
 
   //#region variables
 
@@ -110,7 +111,7 @@ export async function POST(req:NextRequest) {
   }
   catch(e)
   {
-    return new Response(e)
+    res.status(500).json(e)
   }
 }
 
